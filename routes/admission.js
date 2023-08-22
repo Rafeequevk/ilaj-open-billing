@@ -1,12 +1,13 @@
 
 const express = require('express');
-const { getAllAdmission, createAdmission, getAdmissionById, updateAdmission, deleteAdmiddion } = require('../controller/admission');
+const  admissionContoller = require('../controllers/admission');
 const router = express.Router();
 
-router.get('/',getAllAdmission)
-router.post('/admit',createAdmission)
-router.get('/:id',getAdmissionById)
-router.put('/:id',updateAdmission)
-router.delete('/:id',deleteAdmiddion)
+router.get('/',admissionContoller.getAllAdmission)
+router.post('/admit',admissionContoller.createAdmission)
+router.get('/:id',admissionContoller.getAdmissionById)
+router.put('/:id',admissionContoller.updateAdmission)
+router.delete('/:id',admissionContoller.deleteAdmission)
 
 module.exports =router
+

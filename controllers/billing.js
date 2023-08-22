@@ -4,7 +4,7 @@ const billingRepo = require('../repositories/billing')
 //@desc  create a new bill
 //Route POST /api/v1/billing/createBill
 //Access public
-exports.createBilling = asynchHandler(async(req,res,next)=>{
+const createBill = asynchHandler(async(req,res,next)=>{
 const {invoiceId,item,price,quantity} = req.body
     await billingRepo.createTransaction(invoiceId,item,price,quantity)
     res.status(200).json({
@@ -17,7 +17,7 @@ const {invoiceId,item,price,quantity} = req.body
 //Route UPDATE /api/v1/billing/update/id
 //Access public
 
-exports.updateBill = asynchHandler(async(req,res,next)=>{
+const updateBill = asynchHandler(async(req,res,next)=>{
     const {item,price,quantity} = req.body
     const billingId = req.params.id
 await billingRepo.updateBill(item,price,quantity,billingId)
@@ -29,7 +29,7 @@ res.status(200).json({
 //@desc  delete bill
 //Route DELETE /api/v1/billing/delete/id
 //Access public
-exports.deleteBill = asynchHandler(async(req,res,next)=>{
+const deleteBill = asynchHandler(async(req,res,next)=>{
     const billingId = req.params.id
     await billingRepo.deleteBill(billingId)
     res.status(200).json({
@@ -37,3 +37,7 @@ exports.deleteBill = asynchHandler(async(req,res,next)=>{
         data: { message: "Success"},
       })
 })
+
+module.exports={
+  deleteBill,updateBill,createBill
+}

@@ -1,4 +1,9 @@
 const {format} = require('date-fns') 
-exports.dateConversion = (date)=>{
+
+
+const convertToDDMMYYYY = (date)=>{
+    console.log('date',date);
 return format(date,'dd/MM/yyyy')
 }
+
+module.exports = convertToDDMMYYYY

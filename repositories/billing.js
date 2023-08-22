@@ -1,52 +1,86 @@
 const pool = require("../config/db");
-const BillingQueries = require('../quries/billing')
+const BillingQueries = require("../queries/billing");
+const { invoice } = require("../models/invoices");
+const { transaction } = require("../models/transactions");
+const { where } = require("sequelize");
 
-const createInvoice = (patientIid,admissionId,finalAmount,discountAmount)=>{
-console.log("patientId",patientIid, "admissionId:",admissionId);
-return new Promise((resolve,reject)=>{
-    pool.query(BillingQueries.createInvoice,[patientIid,admissionId,finalAmount,discountAmount],(error,result)=>{
-        if(error) reject(error)
-        else resolve(result.rows[0].invoice_id)
+const createInvoice = (admissionId, finalAmount, discountAmount) => {
+  return new Promise((resolve, reject) => {
+    invoice
+      .create({
+        admission_id: admissionId,
+        final_amount: finalAmount,
+        discount_amount: discountAmount,
+      })
+      .then(() => {
+        resolve(true);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+const createTransaction = (invoiceId, item, price, quantity) => {
+  return new Promise((resolve, reject) => {
+    transaction
+      .create({
+        invoice_id: invoiceId,
+        item: item,
+        price: price,
+        quantity: quantity,
+      })
+      .then(() => {
+        resolve(true);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+const updateBill = (item, price, quantity, id) => {
+  return new Promise((resolve, reject) => {
+    transaction
+      .update(
+        { item: item, price: price, quantity: quantity },
+        { where: { transaction_id: id } }
+      )
+      .then(() => resolve(true))
+      .catch((err) => reject(err));
+  });
+};
+
+const deleteBill = (id) => {
+  return new Promise((resolve, reject) => {
+    transaction.destroy({
+      where: {
+        transaction_id: id,
+      },
+    }).then(()=>{
+      resolve(true)
+    }).catch((err)=>{
+      reject(err)
     })
-})
-}
-const createTransaction =(invoiceId,item,price,quantity)=>{
-    return new Promise((resolve,reject)=>{
-        pool.query(BillingQueries.createTransaction,[invoiceId,item,price,quantity],(error,result)=>{
-            if(error) reject(error)
-            else resolve(result.rows)
-        })
-    })
-}
+  });
+};
 
-const updateBill = (item,price,quantity,billingId)=>{
-    return new Promise((resolve,reject)=>{
-        pool.query(BillingQueries.updateBill,[item,price,quantity,billingId],(error,result)=>{
-            if(error) reject(error)
-            else resolve(result.rows)
+const getBillByAdmissionId = (admissionId) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      BillingQueries.getBillByAdmissionId,
+      [admissionId],
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result.rows);
+      }
+    );
+  });
+};
 
-        })
-    })
-
-}
-const deleteBill = (billingId)=>{
-    return new Promise((resolve,reject)=>{
-        pool.query(BillingQueries.deleteBill,[billingId],(error,result)=>{
-            if(error) reject(error)
-            else resolve(result.rows)
-        })
-    })
-}
-
-const getBillByAdmissionId = (admissionId)=>{
-    return new Promise((resolve,reject)=>{
-        pool.query(BillingQueries.getBillByAdmissionId,[admissionId],(error,result)=>{
-            if(error) reject(error)
-            else resolve (result.rows)
-        })
-    })
-}
-
-module.exports ={
-    createInvoice,createTransaction,updateBill,deleteBill,getBillByAdmissionId
-}
+module.exports = {
+  createInvoice,
+  createTransaction,
+  updateBill,
+  deleteBill,
+  getBillByAdmissionId,
+};

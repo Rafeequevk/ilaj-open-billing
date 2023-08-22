@@ -2,19 +2,20 @@ const patientDetailRepo = require('../repositories/patientDetails')
 const errorRespons = require("../utils/errorResponse");
 const asynchHandler = require('../middlewares/asynchHandler')
 const admissionRepo = require('../repositories/admission')
-const billingRepo = require('../repositories/billing')
+const billingRepo = require('../repositories/billing');
+const { DATE } = require('sequelize');
 
 //@desc  create a new patient
 //Route POST /api/v1/register
 //Access public
-exports.createNewPatient = asynchHandler(async(req,res,next)=>{
+const createNewPatient = asynchHandler(async(req,res,next)=>{
 const {name,age,gender,mrdNo,address,phone,chiefPhysician,consultingDr}= req.body.patientDetails
-const {admissionDate,roomNo}= req.body.admissionDetails
+const admissionDate = new Date()
+const {roomNo}= req.body.admissionDetails
 const {finalAmount,discountAmount} = req.body.invoiceDetails
 const patientId = await patientDetailRepo.createNewPatient(name,age,gender,mrdNo,address,phone)
-console.log("patient Id :", patientId);
 const admissionId = await admissionRepo.createAdmission(patientId,admissionDate,roomNo,chiefPhysician,consultingDr)
-await billingRepo.createInvoice(patientId,admissionId,finalAmount,discountAmount)
+await billingRepo.createInvoice(admissionId,finalAmount,discountAmount)
   res.status(200).json({
   success: true,
   data: { message: "Succesfully Admitted"},
@@ -26,7 +27,7 @@ await billingRepo.createInvoice(patientId,admissionId,finalAmount,discountAmount
 //Route GET /api/v1/patients
 //Access public
 
-exports.getAllPatients = asynchHandler(async (req,res)=>{
+const getAllPatients = asynchHandler(async (req,res)=>{
     const patients = await patientDetailRepo.getAllPatients()
     res.status(201).json({
         success: true,
@@ -38,26 +39,23 @@ exports.getAllPatients = asynchHandler(async (req,res)=>{
 //Route GET /api/v1/patients/id
 //Access public
 
-exports.getPatientById = asynchHandler(async(req,res,next)=>{
+const getPatientById = asynchHandler(async(req,res,next)=>{
     const id= req.params.id;
     const patient = await patientDetailRepo.getPatientById(id)
-    if(patient && patient.length){
-      return res.status(201).json({
+          return res.status(201).json({
         success: true,
         data: { message: "Patient with Selected id",patient},
       });
-    }
-    next(new errorRespons(`Message: Patient Doesn't Exist with id ${id}`, 404));
 })
 
 //@desc  Update patient Details
 //Route PUT /api/v1/patients/id
 //Access public
-
-exports.updatePatient = asynchHandler(async(req,res)=>{
+const updatePatient = asynchHandler(async(req,res)=>{
 const {name,age,gender,mrdNo,address,phone,chiefPhysician,consultingDr}= req.body
 const id = req.params.id
-const patientExist = await patientDetailRepo.updatePatient(name,age,gender,mrdNo,address,phone,chiefPhysician,consultingDr,id)
+const patientExist = await patientDetailRepo.updatePatient(name,age,gender,mrdNo,address,phone,id)
+
 if(patientExist){
   res.status(201).json({
     success: true,
@@ -70,7 +68,7 @@ if(patientExist){
 //Route DELETE /api/v1/patients/id
 //Access public
 
-exports.deletePatient = asynchHandler (async (req,res)=>{
+const deletePatient = asynchHandler (async (req,res)=>{
   const id = req.params.id
   const deleted = await patientDetailRepo.deletePatient(id)
   if(deleted){
@@ -83,3 +81,6 @@ exports.deletePatient = asynchHandler (async (req,res)=>{
   }
 })
 
+module.exports={
+  deletePatient,updatePatient,getAllPatients,getPatientById,createNewPatient
+}

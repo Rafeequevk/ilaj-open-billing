@@ -1,6 +1,7 @@
 const express = require('express')
 const dotenv = require('dotenv').config({ path:'./config/config.env'});
 const app = express();
+var sequelize = require('./config/db')
 const path = require('path') 
 const expressLayouts = require('express-ejs-layouts')
 // app.use(express.static(path.join(__dirname, 'public')));
@@ -19,7 +20,14 @@ const billing = require('./routes/billing')
 app.use('/api/v1/billing',billing)
 const viewBill = require('./routes/viewBill')
 app.use('/api/v1/viewBill',viewBill)
-
+const doctors = require('./routes/doctors')
+app.use ('/api/v1/doctors',doctors)
+const departments = require('./routes/departments')
+app.use ('/api/v1/departments',departments)
+const rooms = require('./routes/rooms')
+app.use ('/api/v1/rooms',rooms)
+const roomsCategory = require('./routes/roomCategory')
+app.use ('/api/v1/roomscategory',roomsCategory)
 
 app.get('/',(req,res)=>{
     res.status(200).json({ success: true, message: "Welcome to Ilaj Open Billing"});
